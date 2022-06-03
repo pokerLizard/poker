@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'game_table.dart';
+import 'game_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,17 +18,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const GamePage(),
-    );
-  }
-}
-
-class GamePage extends StatelessWidget {
-  const GamePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: GameTable(),
     );
   }
 }
