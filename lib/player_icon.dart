@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class PlayerIcon extends StatelessWidget {
-  const PlayerIcon({Key? key}) : super(key: key);
+  const PlayerIcon({Key? key, required this.name, required this.pocket})
+      : super(key: key);
+  final String name;
+  final double pocket;
 
   @override
   Widget build(BuildContext context) {
@@ -9,12 +12,12 @@ class PlayerIcon extends StatelessWidget {
       width: 80,
       height: 80,
       child: Column(
-        children: const [
+        children: [
           CircleAvatar(
-            child: Text("fish"),
+            child: Text(name),
           ),
-          Text("yofish"),
-          Text("\$10000.00"),
+          Text(name),
+          Text("${pocket}bb"),
         ],
       ),
     );

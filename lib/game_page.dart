@@ -8,7 +8,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 
 class ServerEvent {
   final String name;
-  final Object data;
+  final dynamic data;
 
   ServerEvent(this.name, this.data);
 }
@@ -29,37 +29,42 @@ class StreamSocket {
 StreamSocket streamSocket = StreamSocket();
 
 //STEP2: Add this function in main function in main.dart file and add incoming data to the stream
-void connectAndListen() {
+void connectAndListen(name) {
   IO.Socket socket = IO.io('http://localhost:3000', <String, dynamic>{
     "transports": ["websocket"],
     "autoConnect": false,
   });
 
-  socket.auth = {'username': 'Jeff'};
+  socket.auth = {'name': name};
 
   socket.onConnect((_) {
     print('connect');
   });
 
   //When an event recieved from server, data is added to the stream
-  socket.on('users', (users) {
-    streamSocket.addResponse(ServerEvent("userConnected", users));
+  socket.on('state_update', (state) {
+    streamSocket.addResponse(ServerEvent("state update", state));
   });
   socket.onDisconnect((_) => print('disconnect'));
   socket.connect();
 }
 
 class GamePage extends StatelessWidget {
-  const GamePage({Key? key}) : super(key: key);
+  const GamePage({Key? key, required this.playerName}) : super(key: key);
+  final String playerName;
 
   @override
   Widget build(BuildContext context) {
-    connectAndListen();
+    connectAndListen(playerName);
     return StreamBuilder<ServerEvent>(
         stream: streamSocket.getResponse,
         builder: (context, snapshot) {
           print(snapshot.connectionState);
-          print(snapshot.data?.data);
+          if (snapshot.connectionState != ConnectionState.active) {
+            return const CircularProgressIndicator();
+          }
+          final state = snapshot.data?.data;
+          print(state);
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey,
@@ -86,7 +91,12 @@ class GamePage extends StatelessWidget {
             backgroundColor: Colors.grey,
             body: Column(
               children: [
-                const SizedBox(height: 400, child: GameTable()),
+                SizedBox(
+                    height: 400,
+                    child: GameTable(
+                      playerName: playerName,
+                      state: state,
+                    )),
                 SizedBox(
                   height: 140,
                   child: Column(

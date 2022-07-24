@@ -3,25 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:poker/player_icon.dart';
 
 class GameTable extends StatelessWidget {
-  const GameTable({Key? key}) : super(key: key);
+  const GameTable({Key? key, required this.playerName, required this.state})
+      : super(key: key);
+  final dynamic state;
+  final String playerName;
 
   @override
   Widget build(BuildContext context) {
+    final players = state['players'] as List;
+    final offset = players.indexWhere((player) => player['name'] == playerName);
     return SizedBox(
         height: 300,
         width: MediaQuery.of(context).size.width,
         child: CustomPaint(
           painter: TablePainter(),
           child: CustomMultiChildLayout(
-            delegate: PlayersLayoutsDelegate(),
-            children: List.generate(
-              10,
-              (i) => LayoutId(
-                id: i,
-                child: const PlayerIcon(),
-              ),
-            ).toList(),
-          ),
+              delegate: PlayersLayoutsDelegate(),
+              children: players
+                  .asMap()
+                  .map((idx, player) {
+                    return MapEntry(
+                        idx,
+                        LayoutId(
+                            id: (idx - offset) % players.length,
+                            child: PlayerIcon(
+                              name: player['name'],
+                              pocket: player['pocket'].toDouble(),
+                            )));
+                  })
+                  .values
+                  .toList()),
         ));
   }
 }
@@ -45,16 +56,16 @@ class PlayersLayoutsDelegate extends MultiChildLayoutDelegate {
     final dy = center.dy - iconWidth / 2;
 
     final positions = [
-      Offset(dx, dy - height / 2),
-      Offset(dx + rectWidth / 2, dy - height / 2),
-      Offset(dx + rectWidth / 2 + circlePosX, dy - circlePosY),
-      Offset(dx + rectWidth / 2 + circlePosX, dy + circlePosY),
-      Offset(dx + rectWidth / 2, dy + height / 2),
       Offset(dx, dy + height / 2),
       Offset(dx - rectWidth / 2, dy + height / 2),
       Offset(dx - rectWidth / 2 - circlePosX, dy + circlePosY),
       Offset(dx - rectWidth / 2 - circlePosX, dy - circlePosY),
       Offset(dx - rectWidth / 2, dy - height / 2),
+      Offset(dx, dy - height / 2),
+      Offset(dx + rectWidth / 2, dy - height / 2),
+      Offset(dx + rectWidth / 2 + circlePosX, dy - circlePosY),
+      Offset(dx + rectWidth / 2 + circlePosX, dy + circlePosY),
+      Offset(dx + rectWidth / 2, dy + height / 2),
     ];
 
     for (int i = 0; i < positions.length; ++i) {

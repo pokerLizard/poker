@@ -17,13 +17,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const EnterPage(),
+      home: EnterPage(),
     );
   }
 }
 
 class EnterPage extends StatelessWidget {
-  const EnterPage({Key? key}) : super(key: key);
+  EnterPage({Key? key}) : super(key: key);
+  final playerNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +33,12 @@ class EnterPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(8.0),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
+              controller: playerNameController,
               textAlign: TextAlign.center,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: "enter username",
                 border: OutlineInputBorder(),
               ),
@@ -45,7 +47,14 @@ class EnterPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) {
+                  return GamePage(
+                    playerName: playerNameController.text,
+                  );
+                }));
+              },
               child: const Text('Enter'),
             ),
           )
