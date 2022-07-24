@@ -17,7 +17,40 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const GamePage(),
+      home: const EnterPage(),
+    );
+  }
+}
+
+class EnterPage extends StatelessWidget {
+  const EnterPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: TextField(
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: "enter username",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: () {},
+              child: const Text('Enter'),
+            ),
+          )
+        ],
+      ),
     );
   }
 }
