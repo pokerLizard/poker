@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:poker/card.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:flutter/material.dart';
@@ -60,12 +61,11 @@ class GamePage extends StatelessWidget {
     return StreamBuilder<ServerEvent>(
         stream: streamSocket.getResponse,
         builder: (context, snapshot) {
-          print(snapshot.connectionState);
           if (snapshot.connectionState != ConnectionState.active) {
             return const CircularProgressIndicator();
           }
           final state = snapshot.data?.data;
-          print(state);
+          final round = state['curRound'];
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey,
@@ -99,55 +99,62 @@ class GamePage extends StatelessWidget {
                       state: state,
                       socket: socket,
                     )),
-                SizedBox(
-                  height: 140,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 80,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                state['curRound'] == null
+                    ? Container()
+                    : SizedBox(
+                        height: 140,
+                        child: Column(
                           children: [
-                            PlayingCardView(
-                                card: PlayingCard(Suit.clubs, CardValue.nine)),
-                            PlayingCardView(
-                                card: PlayingCard(Suit.clubs, CardValue.nine)),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 40,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {},
-                              child: const Text('Fold'),
+                            SizedBox(
+                              height: 80,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  PokerCard(
+                                    card: round['playerStates'][playerName]
+                                        ['hand'][0],
+                                  ),
+                                  PokerCard(
+                                    card: round['playerStates'][playerName]
+                                        ['hand'][1],
+                                  ),
+                                ],
+                              ),
                             ),
-                            ElevatedButton(
-                              onPressed: () {},
-                              child: const Text('Call'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {},
-                              child: const Text.rich(
-                                TextSpan(
-                                  text: 'Raise To\n', // default text style
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                        text: '\$1000',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                            SizedBox(
+                              height: 40,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    child: const Text('Fold'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    child: const Text('Call'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    child: const Text.rich(
+                                      TextSpan(
+                                        text:
+                                            'Raise To\n', // default text style
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: '\$1000',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
               ],
             ),
           );
