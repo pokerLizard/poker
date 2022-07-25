@@ -1,39 +1,64 @@
 import 'dart:math' as math;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:flutter/material.dart';
 import 'package:poker/player_icon.dart';
 
 class GameTable extends StatelessWidget {
-  const GameTable({Key? key, required this.playerName, required this.state})
+  const GameTable(
+      {Key? key,
+      required this.playerName,
+      required this.state,
+      required this.socket})
       : super(key: key);
   final dynamic state;
   final String playerName;
+  final io.Socket socket;
 
   @override
   Widget build(BuildContext context) {
     final players = state['players'] as List;
     final offset = players.indexWhere((player) => player['name'] == playerName);
-    return SizedBox(
-        height: 300,
-        width: MediaQuery.of(context).size.width,
-        child: CustomPaint(
-          painter: TablePainter(),
-          child: CustomMultiChildLayout(
-              delegate: PlayersLayoutsDelegate(),
-              children: players
-                  .asMap()
-                  .map((idx, player) {
-                    return MapEntry(
-                        idx,
-                        LayoutId(
-                            id: (idx - offset) % players.length,
-                            child: PlayerIcon(
-                              name: player['name'],
-                              pocket: player['pocket'].toDouble(),
-                            )));
-                  })
-                  .values
-                  .toList()),
-        ));
+    final round = state['curRound'];
+    final playerStates = round?['playerStates'];
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        SizedBox(
+            height: 300,
+            width: MediaQuery.of(context).size.width,
+            child: CustomPaint(
+              painter: TablePainter(),
+              child: CustomMultiChildLayout(
+                  delegate: PlayersLayoutsDelegate(),
+                  children: players
+                      .asMap()
+                      .map((idx, player) {
+                        return MapEntry(
+                            idx,
+                            LayoutId(
+                                id: (idx - offset) % players.length,
+                                child: PlayerIcon(
+                                  curBet: playerStates?[player['name']]
+                                          ['curBet']
+                                      .toDouble(),
+                                  name: player['name'],
+                                  pocket: player['pocket'].toDouble(),
+                                )));
+                      })
+                      .values
+                      .toList()),
+            )),
+        Center(
+          child: round != null
+              ? Text("${round['pot']}bb")
+              : ElevatedButton(
+                  onPressed: () {
+                    socket.emit('start_game');
+                  },
+                  child: const Text('Start Round')),
+        ),
+      ],
+    );
   }
 }
 

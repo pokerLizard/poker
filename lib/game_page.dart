@@ -29,7 +29,7 @@ class StreamSocket {
 StreamSocket streamSocket = StreamSocket();
 
 //STEP2: Add this function in main function in main.dart file and add incoming data to the stream
-void connectAndListen(name) {
+IO.Socket connectAndListen(name) {
   IO.Socket socket = IO.io('http://localhost:3000', <String, dynamic>{
     "transports": ["websocket"],
     "autoConnect": false,
@@ -47,6 +47,7 @@ void connectAndListen(name) {
   });
   socket.onDisconnect((_) => print('disconnect'));
   socket.connect();
+  return socket;
 }
 
 class GamePage extends StatelessWidget {
@@ -55,7 +56,7 @@ class GamePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    connectAndListen(playerName);
+    final socket = connectAndListen(playerName);
     return StreamBuilder<ServerEvent>(
         stream: streamSocket.getResponse,
         builder: (context, snapshot) {
@@ -96,6 +97,7 @@ class GamePage extends StatelessWidget {
                     child: GameTable(
                       playerName: playerName,
                       state: state,
+                      socket: socket,
                     )),
                 SizedBox(
                   height: 140,
