@@ -3,7 +3,6 @@ import 'package:poker/card.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:flutter/material.dart';
-import 'package:playing_cards/playing_cards.dart';
 import 'package:poker/game_table.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
@@ -27,10 +26,11 @@ class StreamSocket {
   }
 }
 
-StreamSocket streamSocket = StreamSocket();
+StreamSocket? streamSocket;
 
 //STEP2: Add this function in main function in main.dart file and add incoming data to the stream
 IO.Socket connectAndListen(name) {
+  streamSocket = StreamSocket();
   IO.Socket socket = IO.io('http://localhost:3000', <String, dynamic>{
     "transports": ["websocket"],
     "autoConnect": false,
@@ -44,9 +44,14 @@ IO.Socket connectAndListen(name) {
 
   //When an event recieved from server, data is added to the stream
   socket.on('state_update', (state) {
-    streamSocket.addResponse(ServerEvent("state update", state));
+    streamSocket?.addResponse(ServerEvent("state update", state));
   });
-  socket.onDisconnect((_) => print('disconnect'));
+
+  socket.onDisconnect((_) {
+    print('${name} disconnented');
+    streamSocket?.dispose();
+  });
+
   socket.connect();
   return socket;
 }
@@ -58,47 +63,76 @@ class GamePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final socket = connectAndListen(playerName);
-    return StreamBuilder<ServerEvent>(
-        stream: streamSocket.getResponse,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.active) {
-            return const CircularProgressIndicator();
-          }
-          final state = snapshot.data?.data;
-          final round = state['curRound'];
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.grey,
-              elevation: 0.0,
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.grey,
+        elevation: 0.0,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            ListTile(
+              title: const Text('補充籌碼'),
+              onTap: () {},
             ),
-            drawer: Drawer(
-              child: ListView(
-                children: [
-                  ListTile(
-                    title: const Text('補充籌碼'),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    title: const Text('離桌'),
-                    onTap: () {},
-                  ),
-                  ListTile(
-                    title: const Text('離座觀戰'),
-                    onTap: () {},
-                  ),
-                ],
-              ),
+            ListTile(
+              title: const Text('離桌'),
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Leave?'),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                socket.emit('leave');
+                                socket.disconnect();
+                                // leave dialog
+                                Navigator.of(context).pop();
+                                // leave table
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('yes')),
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('no'))
+                        ],
+                      );
+                    });
+              },
             ),
-            backgroundColor: Colors.grey,
-            body: Column(
+            ListTile(
+              title: const Text('離座觀戰'),
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.grey,
+      body: StreamBuilder<ServerEvent>(
+          stream: streamSocket?.getResponse,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.active) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final state = snapshot.data?.data;
+            final round = state['curRound'];
+            return Column(
               children: [
-                SizedBox(
-                    height: 400,
-                    child: GameTable(
-                      playerName: playerName,
-                      state: state,
-                      socket: socket,
-                    )),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                      height: 380,
+                      child: GameTable(
+                        playerName: playerName,
+                        state: state,
+                        socket: socket,
+                      )),
+                ),
                 state['curRound'] == null
                     ? Container()
                     : SizedBox(
@@ -156,8 +190,8 @@ class GamePage extends StatelessWidget {
                         ),
                       ),
               ],
-            ),
-          );
-        });
+            );
+          }),
+    );
   }
 }
