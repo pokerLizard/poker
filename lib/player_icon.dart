@@ -18,7 +18,6 @@ class PlayerIcon extends StatelessWidget {
       height: 100,
       child: Column(
         children: [
-          curBet != null && curBet != 0 ? Text('${curBet}bb') : Container(),
           CircleAvatar(
             child: Text(name),
           ),

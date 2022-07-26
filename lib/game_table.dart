@@ -67,7 +67,7 @@ class PlayersLayoutsDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
-    const iconWidth = 80;
+    const iconWidth = 100;
     final center = Offset(size.width / 2, size.height / 2);
     final width = size.width - iconWidth;
     final height = size.height - iconWidth;
