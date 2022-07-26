@@ -67,7 +67,7 @@ class PokerCard extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.center,
-            child: suitText,
+            child: Image(width: 22, image: suitImage(suit)),
           ),
           Align(
             alignment: Alignment.bottomRight,
@@ -76,6 +76,21 @@ class PokerCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  AssetImage suitImage(String? suit) {
+    switch (suit) {
+      case 'c':
+        return const AssetImage('images/clubs.jpeg');
+      case 'd':
+        return const AssetImage('images/diamonds.jpeg');
+      case 'h':
+        return const AssetImage('images/hearts.jpeg');
+      case 's':
+        return const AssetImage('images/spades.jpeg');
+      default:
+        return const AssetImage('images/spades.jpeg');
+    }
   }
 
   String suitString(CardSuit? suit) {
