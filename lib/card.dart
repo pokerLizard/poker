@@ -31,8 +31,6 @@ class PokerCard extends StatelessWidget {
 
   CardValue cardValue(String value) {
     switch (value) {
-      case '1':
-        return CardValue.ace;
       case '2':
         return CardValue.two;
       case '3':
@@ -57,6 +55,8 @@ class PokerCard extends StatelessWidget {
         return CardValue.queen;
       case '13':
         return CardValue.king;
+      case '14':
+        return CardValue.ace;
       default:
         return CardValue.joker_1;
     }
