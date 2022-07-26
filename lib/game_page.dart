@@ -49,7 +49,6 @@ IO.Socket connectAndListen(name) {
 
   socket.onDisconnect((_) {
     print('${name} disconnented');
-    streamSocket?.dispose();
   });
 
   socket.connect();
@@ -63,65 +62,66 @@ class GamePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final socket = connectAndListen(playerName);
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey,
-        elevation: 0.0,
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            ListTile(
-              title: const Text('補充籌碼'),
-              onTap: () {},
+    return StreamBuilder<ServerEvent>(
+        stream: streamSocket?.getResponse,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.active) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final state = snapshot.data?.data;
+          final round = state['curRound'];
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.grey,
+              elevation: 0.0,
             ),
-            ListTile(
-              title: const Text('離桌'),
-              onTap: () {
-                Navigator.of(context).pop();
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Leave?'),
-                        actions: [
-                          TextButton(
-                              onPressed: () {
-                                socket.emit('leave');
-                                socket.disconnect();
-                                // leave dialog
-                                Navigator.of(context).pop();
-                                // leave table
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('yes')),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('no'))
-                        ],
-                      );
-                    });
-              },
+            drawer: Drawer(
+              child: ListView(
+                children: [
+                  ListTile(
+                    title: const Text('補充籌碼'),
+                    onTap: () {},
+                  ),
+                  ListTile(
+                    title: const Text('離桌'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Leave?'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      socket.emit('leave');
+                                      socket.disconnect();
+                                      streamSocket?.dispose();
+                                      // leave dialog
+                                      Navigator.of(context).pop();
+                                      // leave table
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('yes')),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('no'))
+                              ],
+                            );
+                          });
+                    },
+                  ),
+                  ListTile(
+                    title: const Text('離座觀戰'),
+                    onTap: () {},
+                  ),
+                ],
+              ),
             ),
-            ListTile(
-              title: const Text('離座觀戰'),
-              onTap: () {},
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: Colors.grey,
-      body: StreamBuilder<ServerEvent>(
-          stream: streamSocket?.getResponse,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.active) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final state = snapshot.data?.data;
-            final round = state['curRound'];
-            return Column(
+            backgroundColor: Colors.grey,
+            body: Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -133,7 +133,8 @@ class GamePage extends StatelessWidget {
                         socket: socket,
                       )),
                 ),
-                state['curRound'] == null
+                state['curRound'] == null ||
+                        round['playerStates']?[playerName] == null
                     ? Container()
                     : SizedBox(
                         height: 140,
@@ -190,8 +191,8 @@ class GamePage extends StatelessWidget {
                         ),
                       ),
               ],
-            );
-          }),
-    );
+            ),
+          );
+        });
   }
 }

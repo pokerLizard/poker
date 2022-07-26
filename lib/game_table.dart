@@ -38,9 +38,6 @@ class GameTable extends StatelessWidget {
                             LayoutId(
                                 id: (idx - offset) % players.length,
                                 child: PlayerIcon(
-                                  curBet: playerStates?[player['name']]
-                                          ['curBet']
-                                      .toDouble(),
                                   name: player['name'],
                                   pocket: player['pocket'].toDouble(),
                                 )));

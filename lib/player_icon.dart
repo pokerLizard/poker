@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
 class PlayerIcon extends StatelessWidget {
-  const PlayerIcon(
-      {Key? key,
-      required this.name,
-      required this.pocket,
-      required this.curBet})
-      : super(key: key);
+  const PlayerIcon({
+    Key? key,
+    required this.name,
+    required this.pocket,
+  }) : super(key: key);
   final String name;
-  final double? curBet;
   final double pocket;
 
   @override
